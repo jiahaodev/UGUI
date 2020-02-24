@@ -1,3 +1,10 @@
+/****************************************************
+    文件：BaseInputModule.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/24 17:46       
+    功能：输入模块的基类
+*****************************************************/
 using System;
 using System.Collections.Generic;
 
@@ -5,10 +12,12 @@ namespace UnityEngine.EventSystems
 {
     [RequireComponent(typeof(EventSystem))]
     /// <summary>
-    /// A base module that raises events and sends them to GameObjects.
+    /// A base module that raises events(引发/生成 事件) and sends them to GameObjects.
     /// </summary>
     /// <remarks>
-    /// An Input Module is a component of the EventSystem that is responsible for raising events and sending them to GameObjects for handling. The BaseInputModule is a class that all Input Modules in the EventSystem inherit from. Examples of provided modules are TouchInputModule and StandaloneInputModule, if these are inadequate for your project you can create your own by extending from the BaseInputModule.
+    /// An Input Module is a component of the EventSystem that is responsible for raising events and sending them to GameObjects for handling.
+    /// The BaseInputModule is a class that all Input Modules in the EventSystem inherit from. Examples of provided modules are TouchInputModule and StandaloneInputModule,
+    /// if these are inadequate（不充足的） for your project you can create your own by extending from the BaseInputModule.
     /// </remarks>
     /// <example>
     /// <code>

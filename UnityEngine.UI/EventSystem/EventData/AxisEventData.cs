@@ -1,3 +1,10 @@
+/****************************************************
+    文件：AxisEventData.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/24 17:25       
+    功能：轴方向事件数据
+*****************************************************/
 namespace UnityEngine.EventSystems
 {
     /// <summary>
@@ -13,6 +20,7 @@ namespace UnityEngine.EventSystems
         /// <summary>
         /// MoveDirection for this event.
         /// </summary>
+        /// 【枚举】left、up、right、down、none
         public MoveDirection moveDir { get; set; }
 
         public AxisEventData(EventSystem eventSystem)

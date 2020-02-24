@@ -1,3 +1,10 @@
+/****************************************************
+    文件：PointerEventData.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/24 17:31       
+    功能：Pointer ：PC端是值鼠标指针，移动端是指触屏
+*****************************************************/
 using System;
 using System.Text;
 using System.Collections.Generic;
@@ -89,12 +96,12 @@ namespace UnityEngine.EventSystems
         /// </summary>
         public RaycastResult pointerPressRaycast { get; set; }
 
-        public List<GameObject> hovered = new List<GameObject>();
+        public List<GameObject> hovered = new List<GameObject>(); // todo:靠近的？？
 
         /// <summary>
         /// Is it possible to click this frame
         /// </summary>
-        public bool eligibleForClick { get; set; }
+        public bool eligibleForClick { get; set; }  // eligible 合适的
 
         /// <summary>
         /// Id of the pointer (touch id).

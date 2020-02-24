@@ -1,3 +1,10 @@
+/****************************************************
+    文件：BaseInput.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/24 17:44       
+    功能：提供UnityEngine.dll中  “Input类” 的 桥接
+*****************************************************/
 namespace UnityEngine.EventSystems
 {
     /// <summary>
