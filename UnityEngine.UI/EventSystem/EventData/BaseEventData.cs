@@ -4,6 +4,8 @@
     邮箱: jiahaodev@163.ccom
     日期：2020/02/24 17:23       
     功能：事件数据基类
+         （主要用于IUpdateSelectedHandler、ISelectHandler、IDeselectHandler、
+         ISubmitHandler、ICancelHandler）
 *****************************************************/
 namespace UnityEngine.EventSystems
 {

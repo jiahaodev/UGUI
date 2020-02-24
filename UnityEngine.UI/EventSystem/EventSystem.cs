@@ -1,3 +1,10 @@
+/****************************************************
+	文件：EventSystem.cs
+	作者：JiahaoWu
+	邮箱: jiahaodev@163.ccom
+	日期：2020/02/25 1:35   	
+	功能：
+*****************************************************/
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,10 +23,13 @@ namespace UnityEngine.EventSystems
     /// </remarks>
     public class EventSystem : UIBehaviour
     {
+        #region 输入模块字段
         private List<BaseInputModule> m_SystemInputModules = new List<BaseInputModule>();
 
         private BaseInputModule m_CurrentInputModule;
+        #endregion
 
+        #region 事件系统字段
         private  static List<EventSystem> m_EventSystems = new List<EventSystem>();
 
         /// <summary>
@@ -31,7 +41,7 @@ namespace UnityEngine.EventSystems
             set
             {
                 int index = m_EventSystems.IndexOf(value);
-
+                //如果存在，则移除，并将其放置到列表开头；如果不存在，则不放置入列表内部
                 if (index >= 0)
                 {
                     m_EventSystems.RemoveAt(index);
@@ -39,6 +49,7 @@ namespace UnityEngine.EventSystems
                 }
             }
         }
+        #endregion
 
         [SerializeField]
         [FormerlySerializedAs("m_Selected")]
@@ -120,6 +131,7 @@ namespace UnityEngine.EventSystems
         /// <summary>
         /// Recalculate the internal list of BaseInputModules.
         /// </summary>
+        /// 移除非active的输入模块
         public void UpdateModules()
         {
             GetComponents(m_SystemInputModules);

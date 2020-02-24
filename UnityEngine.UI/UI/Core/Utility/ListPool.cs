@@ -1,3 +1,10 @@
+/****************************************************
+	文件：ListPool.cs
+	作者：JiahaoWu
+	邮箱: jiahaodev@163.ccom
+	日期：2020/02/25 0:55   	
+	功能：对ObjectPool的进一步封装，用于存放List<T>类型数据作为对象池内容
+*****************************************************/
 using System;
 using System.Collections.Generic;
 using UnityEngine;

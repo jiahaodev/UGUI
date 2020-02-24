@@ -4,6 +4,7 @@
     邮箱: jiahaodev@163.ccom
     日期：2020/02/24 17:25       
     功能：轴方向事件数据
+         (多用于IMoveHandler接口中的OnMove方法）
 *****************************************************/
 namespace UnityEngine.EventSystems
 {

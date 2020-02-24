@@ -1,3 +1,16 @@
+/****************************************************
+	文件：EventTrigger.cs
+	作者：JiahaoWu
+	邮箱: jiahaodev@163.ccom
+	日期：2020/02/25 0:21   	
+	功能：事件触发器
+        （通过绑定此组件，实现所有事件触发的功能。类似于Button的onClick）
+    参考：https://www.cnblogs.com/springword/p/6039639.html
+    说明：EventTrigger实现了所有的事件接口，通过“观察者”模式，触发对应的接口。
+          但是会拦截到所有的事件，导致物体上通过实现接口的回调，可能无法调用【待检验todo】
+          因此，UGUI内部代码中没有找到对此类的引用，是相对独立的存在。
+          一般用于外部实现时间监听。
+*****************************************************/
 using System;
 using System.Collections.Generic;
 using UnityEngine.Events;
@@ -13,7 +26,7 @@ namespace UnityEngine.EventSystems
     /// The EventTrigger can be used to specify functions you wish to be called for each EventSystem event.
     /// You can assign multiple functions to a single event and whenever the EventTrigger receives that event it will call those functions in the order they were provided.
     ///
-    /// NOTE: Attaching this component to a GameObject will make that object intercept ALL events, and no events will propagate to parent objects.
+    /// NOTE: Attaching this component to a GameObject will make that object intercept（拦截） ALL events, and no events will propagate（传播） to parent objects.
     /// </remarks>
     /// <example>
     /// There are two ways to intercept events: You could extend EventTrigger, and override the functions for the events you are interested in intercepting; as shown in this example:
@@ -167,6 +180,7 @@ namespace UnityEngine.EventSystems
         /// <remarks>
         /// It stores the callback and which event type should this callback be fired.
         /// </remarks>
+        /// 已经设置来了默认值
         public class Entry
         {
             /// <summary>
@@ -205,6 +219,11 @@ namespace UnityEngine.EventSystems
             set { m_Delegates = value; }
         }
 
+        /// <summary>
+        /// 遍历triggers列表，根据对应的事件id，执行对应的事件回调
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="eventData"></param>
         private void Execute(EventTriggerType id, BaseEventData eventData)
         {
             for (int i = 0, imax = triggers.Count; i < imax; ++i)

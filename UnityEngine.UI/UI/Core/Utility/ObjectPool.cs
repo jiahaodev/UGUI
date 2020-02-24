@@ -1,3 +1,10 @@
+/****************************************************
+	文件：ObjectPool.cs
+	作者：JiahaoWu
+	邮箱: jiahaodev@163.ccom
+	日期：2020/02/25 0:51   	
+	功能：对象池（泛型）
+*****************************************************/
 using System.Collections.Generic;
 using UnityEngine.Events;
 

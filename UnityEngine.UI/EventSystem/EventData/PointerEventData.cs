@@ -4,6 +4,11 @@
     邮箱: jiahaodev@163.ccom
     日期：2020/02/24 17:31       
     功能：Pointer ：PC端是值鼠标指针，移动端是指触屏
+        (EventData中用于最广：
+        IPointerEnterHandler、IPointerExitHandler、
+        IPointerDownHandler、IPointerUpHandler、IPointerClickHandler、
+        IBeginDragHandler、IInitializePotentialDragHandler、IDragHandler、IEndDragHandler、
+        IDropHandler、IScrollHandler、)
 *****************************************************/
 using System;
 using System.Text;

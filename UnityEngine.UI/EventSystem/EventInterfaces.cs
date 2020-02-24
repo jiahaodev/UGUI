@@ -4,6 +4,8 @@
     邮箱: jiahaodev@163.ccom
     日期：2020/02/24 14:31       
     功能：定义了一系列跟输入有关的接口
+    参考：Unity UGUI事件接口概述
+          https://www.cnblogs.com/unity3ds/p/10470295.html
 *****************************************************/
 namespace UnityEngine.EventSystems
 {
@@ -127,6 +129,9 @@ namespace UnityEngine.EventSystems
     /// <remarks>
     /// Criteria for this event is implementation dependent. For example see StandAloneInputModule.
     /// </remarks>
+    //当鼠标在A对象按下还没开始拖拽时 A对象响应此事件
+    //注：此接口事件与IPointerDownHandler接口事件类似
+    // 二者的执行顺序:先执行IPointerDownHandler，然后执行此接口事件
     public interface IInitializePotentialDragHandler : IEventSystemHandler
     {
         /// <summary>
@@ -272,6 +277,9 @@ namespace UnityEngine.EventSystems
     /// <remarks>
     /// Criteria for this event is implementation dependent. For example see StandAloneInputModule.
     /// </remarks>
+    //A、B对象必须均实现IDropHandler接口，且A至少实现IDragHandler接口
+    //当鼠标从A对象上开始拖拽，在B对象上抬起时 B对象响应此事件
+    //即主要是用于接收（响应）拖动数据的
     public interface IDropHandler : IEventSystemHandler
     {
         /// <summary>
@@ -367,6 +375,7 @@ namespace UnityEngine.EventSystems
     /// <remarks>
     /// Criteria for this event is implementation dependent. For example see StandAloneInputModule.
     /// </remarks>
+    /// 点击Submit键(默认是Enter键)
     public interface ISubmitHandler : IEventSystemHandler
     {
         void OnSubmit(BaseEventData eventData);
@@ -378,6 +387,7 @@ namespace UnityEngine.EventSystems
     /// <remarks>
     /// Criteria for this event is implementation dependent. For example see StandAloneInputModule.
     /// </remarks>
+    /// 点击Cancel键(默认是Esc键)
     public interface ICancelHandler : IEventSystemHandler
     {
         void OnCancel(BaseEventData eventData);
