@@ -7,6 +7,7 @@ namespace UnityEngine.UI
     /// <summary>
     /// Values of 'update' called on a Canvas update.
     /// </summary>
+    /// 除了最后一个枚举项，其他五个项分别代表了“布局的三个阶段”和“渲染的两个阶段”。
     public enum CanvasUpdate
     {
         /// <summary>
@@ -26,7 +27,7 @@ namespace UnityEngine.UI
         /// </summary>
         PreRender = 3,
         /// <summary>
-        /// Called late, before render.
+        /// Called late, before render.（PreRender之后，render执行之前）
         /// </summary>
         LatePreRender = 4,
         /// <summary>
@@ -71,14 +72,17 @@ namespace UnityEngine.UI
     /// <summary>
     /// A place where CanvasElements can register themselves for rebuilding.
     /// </summary>
+    /// 【单例】它是UGUI与Canvas之间的中介，实现了ICanvasElement接口的组件都可以注册到它，
+    /// 它监听了Canvas即将渲染的事件，并调用已注册组件的Rebuild等方法。
     public class CanvasUpdateRegistry
     {
         private static CanvasUpdateRegistry s_Instance;
 
         private bool m_PerformingLayoutUpdate;
         private bool m_PerformingGraphicUpdate;
-
+        //布局重建序列索引集
         private readonly IndexedSet<ICanvasElement> m_LayoutRebuildQueue = new IndexedSet<ICanvasElement>();
+        //图形重建序列索引集
         private readonly IndexedSet<ICanvasElement> m_GraphicRebuildQueue = new IndexedSet<ICanvasElement>();
 
         protected CanvasUpdateRegistry()
@@ -155,11 +159,12 @@ namespace UnityEngine.UI
         private void PerformUpdate()
         {
             UISystemProfilerApi.BeginSample(UISystemProfilerApi.SampleType.Layout);
-            CleanInvalidItems();
-
+            CleanInvalidItems();//从两个序列中，删除不可用元素
+            //（1）布局更新开始
             m_PerformingLayoutUpdate = true;
 
             m_LayoutRebuildQueue.Sort(s_SortLayoutFunction);
+            //分别以PreLayout,Layout,PostLayout的参数顺序调用每一个元素的Rebuild方法
             for (int i = 0; i <= (int)CanvasUpdate.PostLayout; i++)
             {
                 for (int j = 0; j < m_LayoutRebuildQueue.Count; j++)
@@ -186,7 +191,9 @@ namespace UnityEngine.UI
             // now layout is complete do culling...
             ClipperRegistry.instance.Cull();
 
+            //（2）图形更新开始
             m_PerformingGraphicUpdate = true;
+            //以PreRender，LatePreRender的参数顺序调用每一个元素的Rebulid方法
             for (var i = (int)CanvasUpdate.PreRender; i < (int)CanvasUpdate.MaxUpdateValue; i++)
             {
                 for (var k = 0; k < instance.m_GraphicRebuildQueue.Count; k++)

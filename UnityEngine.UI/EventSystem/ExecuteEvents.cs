@@ -1,3 +1,11 @@
+/****************************************************
+    文件：ExecuteEvents.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/24 14:23       
+    功能：【静态类】通过Execute(xxxhandler,eventData)
+           实现对handler对应 “xxx事件 接口”的调用
+*****************************************************/
 using System;
 using System.Collections.Generic;
 using UnityEngine.UI;
@@ -275,7 +283,7 @@ namespace UnityEngine.EventSystems
         /// Execute the specified event on the first game object underneath the current touch.
         /// </summary>
         private static readonly List<Transform> s_InternalTransformList = new List<Transform>(30);
-
+        //通过GetEventChain获取target的所有父对象，并对这些对象（包括target）执行Execute方法
         public static GameObject ExecuteHierarchy<T>(GameObject root, BaseEventData eventData, EventFunction<T> callbackFunction) where T : IEventSystemHandler
         {
             GetEventChain(root, s_InternalTransformList);
@@ -340,8 +348,10 @@ namespace UnityEngine.EventSystems
         }
 
         /// <summary>
-        /// Bubble the specified event on the game object, figuring out which object will actually receive the event.
+        /// Bubble the specified event on the game object, figuring out which object will actually（实际上） receive the event.
         /// </summary>
+        /// 功能：    遍历目标对象及其父对象，判断他们是否可以处理某个指定的接口事件，如果可以，把目标对象作为返回值返回
+        /// 使用场景：主要在输入模块里调用，用于获取某个输入模块的响应对象
         public static GameObject GetEventHandler<T>(GameObject root) where T : IEventSystemHandler
         {
             if (root == null)

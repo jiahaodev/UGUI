@@ -1,3 +1,11 @@
+/****************************************************
+    文件：TouchInputModule.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/24 12:40       
+    功能：【已弃用】触摸输入功能
+         （已转移到StandaloneInputModule）
+*****************************************************/
 using System;
 using System.Text;
 using UnityEngine.Serialization;

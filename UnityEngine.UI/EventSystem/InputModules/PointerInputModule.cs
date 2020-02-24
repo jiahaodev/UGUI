@@ -92,11 +92,12 @@ namespace UnityEngine.EventSystems
             if (input.phase == TouchPhase.Canceled)
             {
                 pointerData.pointerCurrentRaycast = new RaycastResult();
+                pointerData.pointerCurrentRaycast = new RaycastResult();
             }
             else
             {
                 eventSystem.RaycastAll(pointerData, m_RaycastResultCache);
-
+                //获得到第一个被射线照射到的对象
                 var raycast = FindFirstRaycast(m_RaycastResultCache);
                 pointerData.pointerCurrentRaycast = raycast;
                 m_RaycastResultCache.Clear();

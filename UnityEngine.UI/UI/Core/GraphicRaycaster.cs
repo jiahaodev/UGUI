@@ -1,3 +1,11 @@
+/****************************************************
+    文件：GraphicRaycaster.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/24 15:51       
+    功能：图形射线照射器
+         （与其他射线照射器的区别就在于，它把照射对象限定为了Graphic。）
+*****************************************************/
 using System;
 using System.Collections.Generic;
 using System.Text;

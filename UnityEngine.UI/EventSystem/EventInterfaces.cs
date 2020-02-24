@@ -1,8 +1,16 @@
+/****************************************************
+    文件：EventInterfaces.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/24 14:31       
+    功能：定义了一系列跟输入有关的接口
+*****************************************************/
 namespace UnityEngine.EventSystems
 {
     /// <summary>
     /// Base class that all EventSystem events inherit from.
     /// </summary>
+    /// 所有输入接口的基类
     public interface IEventSystemHandler
     {
     }
@@ -112,6 +120,7 @@ namespace UnityEngine.EventSystems
         void OnBeginDrag(PointerEventData eventData);
     }
 
+    //Potential  [pəˈtenʃl]  潜在的，有可能的;
     /// <summary>
     /// Interface to implement if you wish to receive OnInitializePotentialDrag callbacks.
     /// </summary>

@@ -1099,6 +1099,7 @@ namespace UnityEngine.UI
         }
 
         // Change the button to the correct state
+        //评估（判断）并刷新状态（过渡到对应状态）
         private void EvaluateAndTransitionToSelectionState()
         {
             if (!IsActive() || !IsInteractable())

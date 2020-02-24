@@ -347,6 +347,7 @@ namespace UnityEngine.EventSystems
             for (var i = 0; i < m_SystemInputModules.Count; i++)
             {
                 var module = m_SystemInputModules[i];
+                //判断是否支持当前平台，且是否应该激活
                 if (module.IsModuleSupported() && module.ShouldActivateModule())
                 {
                     if (m_CurrentInputModule != module)

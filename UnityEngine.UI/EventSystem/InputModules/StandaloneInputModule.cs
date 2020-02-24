@@ -312,7 +312,7 @@ namespace UnityEngine.EventSystems
                 var pointer = GetTouchPointerEventData(touch, out pressed, out released);
 
                 ProcessTouchPress(pointer, pressed, released);
-
+                //如果一直长按，触发ProcessMove和ProcessDrag方法。否则RemovePointerData（移除）
                 if (!released)
                 {
                     ProcessMove(pointer);

@@ -1,3 +1,10 @@
+/****************************************************
+    文件：BaseRaycaster.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/24 15:52       
+    功能：射线照射器 基类
+*****************************************************/
 using System;
 using System.Collections.Generic;
 
@@ -74,12 +81,14 @@ namespace UnityEngine.EventSystems
                 "renderOrderPriority: " + renderOrderPriority;
         }
 
+        //注册到RaycasterManager管理队列
         protected override void OnEnable()
         {
             base.OnEnable();
             RaycasterManager.AddRaycaster(this);
         }
 
+        //从RaycasterManager管理队列解除注册
         protected override void OnDisable()
         {
             RaycasterManager.RemoveRaycasters(this);

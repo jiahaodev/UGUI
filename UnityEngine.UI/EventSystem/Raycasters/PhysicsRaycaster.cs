@@ -141,7 +141,8 @@ namespace UnityEngine.EventSystems
             {
                 if (ReflectionMethodsCache.Singleton.raycast3DAll == null)
                     return;
-
+                //采用ReflectionMethodsCache.Singleton.raycast3DAll()来获取所有射线照射到的对象，
+                //用反射的方式把Physics.RaycastAll()方法缓存下来，让Unity的Physics模块与UI模块，保持低耦合，没有过分依赖。
                 m_Hits = ReflectionMethodsCache.Singleton.raycast3DAll(ray, distanceToClipPlane, finalEventMask);
                 hitCount = m_Hits.Length;
             }
