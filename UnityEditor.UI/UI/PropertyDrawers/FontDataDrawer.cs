@@ -4,6 +4,9 @@ using UnityEngine.UI;
 namespace UnityEditor.UI
 {
     [CustomPropertyDrawer(typeof(FontData), true)]
+    /// <summary>
+    ///   This is a PropertyDrawer for FontData it is implemented using the standard unity PropertyDrawer framework.
+    /// </summary>
     public class FontDataDrawer : PropertyDrawer
     {
         static private class Styles
@@ -30,7 +33,7 @@ namespace UnityEditor.UI
 
             static Styles()
             {
-                m_EncodingContent = new GUIContent("Rich Text", "Use emoticons and colors");
+                m_EncodingContent = EditorGUIUtility.TrTextContent("Rich Text", "Use emoticons and colors");
 
                 // Horizontal Alignment Icons
                 m_LeftAlignText = EditorGUIUtility.IconContent(@"GUISystem/align_horizontally_left", "Left Align");
@@ -226,7 +229,6 @@ namespace UnityEditor.UI
 
                 if (m_ResizeTextForBestFit.boolValue)
                 {
-                    EditorGUILayout.EndFadeGroup();
                     rect.y += rect.height + EditorGUIUtility.standardVerticalSpacing;
                     rect.height = m_ResizeTextMinSizeHeight;
                     EditorGUI.PropertyField(rect, m_ResizeTextMinSize);
@@ -241,7 +243,7 @@ namespace UnityEditor.UI
 
         private void DoTextAligmentControl(Rect position, SerializedProperty alignment)
         {
-            GUIContent alingmentContent = new GUIContent("Alignment");
+            GUIContent alingmentContent = EditorGUIUtility.TrTextContent("Alignment");
 
             int id = EditorGUIUtility.GetControlID(s_TextAlignmentHash, FocusType.Keyboard, position);
 

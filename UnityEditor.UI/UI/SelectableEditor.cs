@@ -8,6 +8,10 @@ using UnityEditor.AnimatedValues;
 namespace UnityEditor.UI
 {
     [CustomEditor(typeof(Selectable), true)]
+    /// <summary>
+    ///   Custom Editor for the Selectable Component.
+    ///   Extend this class to write a custom editor for an Selectable-derived component.
+    /// </summary>
     public class SelectableEditor : Editor
     {
         SerializedProperty m_Script;
@@ -19,7 +23,7 @@ namespace UnityEditor.UI
         SerializedProperty m_AnimTriggerProperty;
         SerializedProperty m_NavigationProperty;
 
-        GUIContent m_VisualizeNavigation = new GUIContent("Visualize", "Show navigation flows between selectable UI elements.");
+        GUIContent m_VisualizeNavigation = EditorGUIUtility.TrTextContent("Visualize", "Show navigation flows between selectable UI elements.");
 
         AnimBool m_ShowColorTint       = new AnimBool();
         AnimBool m_ShowSpriteTrasition = new AnimBool();
@@ -81,9 +85,9 @@ namespace UnityEditor.UI
 
         private void RegisterStaticOnSceneGUI()
         {
-            SceneView.onSceneGUIDelegate -= StaticOnSceneGUI;
+            SceneView.duringSceneGui -= StaticOnSceneGUI;
             if (s_Editors.Count > 0)
-                SceneView.onSceneGUIDelegate += StaticOnSceneGUI;
+                SceneView.duringSceneGui += StaticOnSceneGUI;
         }
 
         static Selectable.Transition GetTransition(SerializedProperty transition)
@@ -218,6 +222,7 @@ namespace UnityEditor.UI
             var normalName = string.IsNullOrEmpty(animationTriggers.normalTrigger) ? "Normal" : animationTriggers.normalTrigger;
             var highlightedName = string.IsNullOrEmpty(animationTriggers.highlightedTrigger) ? "Highlighted" : animationTriggers.highlightedTrigger;
             var pressedName = string.IsNullOrEmpty(animationTriggers.pressedTrigger) ? "Pressed" : animationTriggers.pressedTrigger;
+            var selectedName = string.IsNullOrEmpty(animationTriggers.selectedTrigger) ? "Selected" : animationTriggers.selectedTrigger;
             var disabledName = string.IsNullOrEmpty(animationTriggers.disabledTrigger) ? "Disabled" : animationTriggers.disabledTrigger;
 
             // Create controller and hook up transitions.
@@ -225,6 +230,7 @@ namespace UnityEditor.UI
             GenerateTriggerableTransition(normalName, controller);
             GenerateTriggerableTransition(highlightedName, controller);
             GenerateTriggerableTransition(pressedName, controller);
+            GenerateTriggerableTransition(selectedName, controller);
             GenerateTriggerableTransition(disabledName, controller);
 
             AssetDatabase.ImportAsset(path);
@@ -311,9 +317,13 @@ namespace UnityEditor.UI
             if (!s_ShowNavigation)
                 return;
 
-            for (int i = 0; i < Selectable.allSelectables.Count; i++)
+            Selectable[] selectables = Selectable.allSelectablesArray;
+
+            for (int i = 0; i < selectables.Length; i++)
             {
-                DrawNavigationForSelectable(Selectable.allSelectables[i]);
+                Selectable s = selectables[i];
+                if (SceneManagement.StageUtility.IsGameObjectRenderedByCamera(s.gameObject, Camera.current))
+                    DrawNavigationForSelectable(s);
             }
         }
 

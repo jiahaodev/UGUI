@@ -5,6 +5,10 @@ namespace UnityEditor.UI
 {
     [CustomEditor(typeof(CanvasScaler), true)]
     [CanEditMultipleObjects]
+    /// <summary>
+    ///   Custom Editor for the CanvasScaler component.
+    ///   Extend this class to write a custom editor for an CanvasScaler-derived component.
+    /// </summary>
     public class CanvasScalerEditor : Editor
     {
         SerializedProperty m_UiScaleMode;
@@ -31,10 +35,10 @@ namespace UnityEditor.UI
 
             public Styles()
             {
-                matchContent = new GUIContent("Match");
-                widthContent = new GUIContent("Width");
-                heightContent = new GUIContent("Height");
-                uiScaleModeContent = new GUIContent("UI Scale Mode");
+                matchContent = EditorGUIUtility.TrTextContent("Match");
+                widthContent = EditorGUIUtility.TrTextContent("Width");
+                heightContent = EditorGUIUtility.TrTextContent("Height");
+                uiScaleModeContent = EditorGUIUtility.TrTextContent("UI Scale Mode");
 
                 leftAlignedLabel = new GUIStyle(EditorStyles.label);
                 rightAlignedLabel = new GUIStyle(EditorStyles.label);

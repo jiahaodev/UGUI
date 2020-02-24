@@ -20,6 +20,7 @@
     <DefineConstants>TRACE;DEBUG;UNITY_EDITOR</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Test|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -29,6 +30,7 @@
     <DefineConstants>TRACE;DEBUG;UNITY_EDITOR</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -41,12 +43,10 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="UnityEditor, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="UnityEditor">
       <HintPath>..\lib\UnityEditor.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="UnityEngine">
       <HintPath>..\lib\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
@@ -61,11 +61,6 @@
     <!--Uncomment the block below and change the destination to copy the built dll into your unity install directory-->
     <!--<Copy SourceFiles="$(TargetDir)$(TargetName).dll" DestinationFiles="C:\Program Files (x86)\Unity\Editor\Data\UnityExtensions\Unity\GUISystem\4.6.0\$(TargetName).dll"/>-->
   </Target>
-  <ItemGroup>
-    <None Include="..\UnityEngine.UI\UI\Core\GraphicRaycaster.cs.orig">
-      <Link>UI\Core\GraphicRaycaster.cs.orig</Link>
-    </None>
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\UnityEngine.UI\EventSystem\EventData\AxisEventData.cs">
       <Link>EventSystem\EventData\AxisEventData.cs</Link>
@@ -105,8 +100,6 @@
     </Compile>
     <Compile Include="..\UnityEngine.UI\EventSystem\InputModules\BaseInput.cs">
       <Link>EventSystem\InputModules\BaseInput.cs</Link>
-      <SubType>
-      </SubType>
     </Compile>
     <Compile Include="..\UnityEngine.UI\EventSystem\InputModules\BaseInputModule.cs">
       <Link>EventSystem\InputModules\BaseInputModule.cs</Link>

@@ -3,6 +3,9 @@ using UnityEngine.Events;
 
 namespace UnityEngine.UI
 {
+    /// <summary>
+    /// Wrapper class for managing layout rebuilding of CanvasElement.
+    /// </summary>
     public class LayoutRebuilder : ICanvasElement
     {
         private RectTransform m_ToRebuild;
@@ -40,6 +43,9 @@ namespace UnityEngine.UI
 
         public Transform transform { get { return m_ToRebuild; }}
 
+        /// <summary>
+        /// Has the native representation of this LayoutRebuilder been destroyed?
+        /// </summary>
         public bool IsDestroyed()
         {
             return m_ToRebuild == null;
@@ -50,6 +56,14 @@ namespace UnityEngine.UI
             components.RemoveAll(e => e is Behaviour && !((Behaviour)e).isActiveAndEnabled);
         }
 
+        /// <summary>
+        /// Forces an immediate rebuild of the layout element and child layout elements affected by the calculations.
+        /// </summary>
+        /// <param name="layoutRoot">The layout element to perform the layout rebuild on.</param>
+        /// <remarks>
+        /// Normal use of the layout system should not use this method. Instead MarkLayoutForRebuild should be used instead, which triggers a delayed layout rebuild during the next layout pass. The delayed rebuild automatically handles objects in the entire layout hierarchy in the correct order, and prevents multiple recalculations for the same layout elements.
+        /// However, for special layout calculation needs, ::ref::ForceRebuildLayoutImmediate can be used to get the layout of a sub-tree resolved immediately. This can even be done from inside layout calculation methods such as ILayoutController.SetLayoutHorizontal orILayoutController.SetLayoutVertical. Usage should be restricted to cases where multiple layout passes are unavaoidable despite the extra cost in performance.
+        /// </remarks>
         public static void ForceRebuildLayoutImmediate(RectTransform layoutRoot)
         {
             var rebuilder = s_Rebuilders.Get();
@@ -136,19 +150,36 @@ namespace UnityEngine.UI
             ListPool<Component>.Release(components);
         }
 
+        /// <summary>
+        /// Mark the given RectTransform as needing it's layout to be recalculated during the next layout pass.
+        /// </summary>
+        /// <param name="rect">Rect to rebuild.</param>
         public static void MarkLayoutForRebuild(RectTransform rect)
         {
-            if (rect == null)
+            if (rect == null || rect.gameObject == null)
                 return;
 
             var comps = ListPool<Component>.Get();
+            bool validLayoutGroup = true;
             RectTransform layoutRoot = rect;
-            while (true)
+            var parent = layoutRoot.parent as RectTransform;
+            while (validLayoutGroup && !(parent == null || parent.gameObject == null))
             {
-                var parent = layoutRoot.parent as RectTransform;
-                if (!ValidLayoutGroup(parent, comps))
-                    break;
-                layoutRoot = parent;
+                validLayoutGroup = false;
+                parent.GetComponents(typeof(ILayoutGroup), comps);
+
+                for (int i = 0; i < comps.Count; ++i)
+                {
+                    var cur = comps[i];
+                    if (cur != null && cur is Behaviour && ((Behaviour)cur).isActiveAndEnabled)
+                    {
+                        validLayoutGroup = true;
+                        layoutRoot = parent;
+                        break;
+                    }
+                }
+
+                parent = parent.parent as RectTransform;
             }
 
             // We know the layout root is valid if it's not the same as the rect,
@@ -163,26 +194,22 @@ namespace UnityEngine.UI
             ListPool<Component>.Release(comps);
         }
 
-        private static bool ValidLayoutGroup(RectTransform parent, List<Component> comps)
-        {
-            if (parent == null)
-                return false;
-
-            parent.GetComponents(typeof(ILayoutGroup), comps);
-            StripDisabledBehavioursFromList(comps);
-            var validCount = comps.Count > 0;
-            return validCount;
-        }
-
         private static bool ValidController(RectTransform layoutRoot, List<Component> comps)
         {
-            if (layoutRoot == null)
+            if (layoutRoot == null || layoutRoot.gameObject == null)
                 return false;
 
             layoutRoot.GetComponents(typeof(ILayoutController), comps);
-            StripDisabledBehavioursFromList(comps);
-            var valid =  comps.Count > 0;
-            return valid;
+            for (int i = 0; i < comps.Count; ++i)
+            {
+                var cur = comps[i];
+                if (cur != null && cur is Behaviour && ((Behaviour)cur).isActiveAndEnabled)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static void MarkLayoutRootForRebuild(RectTransform controller)
@@ -209,6 +236,11 @@ namespace UnityEngine.UI
             return m_CachedHashFromTransform;
         }
 
+        /// <summary>
+        /// Does the passed rebuilder point to the same CanvasElement.
+        /// </summary>
+        /// <param name="obj">The other object to compare</param>
+        /// <returns>Are they equal</returns>
         public override bool Equals(object obj)
         {
             return obj.GetHashCode() == GetHashCode();

@@ -11,6 +11,10 @@ namespace UnityEditor.UI
 
     [CustomEditor(typeof(Image), true)]
     [CanEditMultipleObjects]
+    /// <summary>
+    ///   Custom Editor for the Image Component.
+    ///   Extend this class to write a custom editor for an Image-derived component.
+    /// </summary>
     public class ImageEditor : GraphicEditor
     {
         SerializedProperty m_FillMethod;
@@ -21,6 +25,7 @@ namespace UnityEditor.UI
         SerializedProperty m_FillCenter;
         SerializedProperty m_Sprite;
         SerializedProperty m_PreserveAspect;
+        SerializedProperty m_UseSpriteMesh;
         GUIContent m_SpriteContent;
         GUIContent m_SpriteTypeContent;
         GUIContent m_ClockwiseContent;
@@ -34,9 +39,9 @@ namespace UnityEditor.UI
         {
             base.OnEnable();
 
-            m_SpriteContent = new GUIContent("Source Image");
-            m_SpriteTypeContent     = new GUIContent("Image Type");
-            m_ClockwiseContent      = new GUIContent("Clockwise");
+            m_SpriteContent = EditorGUIUtility.TrTextContent("Source Image");
+            m_SpriteTypeContent     = EditorGUIUtility.TrTextContent("Image Type");
+            m_ClockwiseContent      = EditorGUIUtility.TrTextContent("Clockwise");
 
             m_Sprite                = serializedObject.FindProperty("m_Sprite");
             m_Type                  = serializedObject.FindProperty("m_Type");
@@ -46,6 +51,7 @@ namespace UnityEditor.UI
             m_FillClockwise         = serializedObject.FindProperty("m_FillClockwise");
             m_FillAmount            = serializedObject.FindProperty("m_FillAmount");
             m_PreserveAspect        = serializedObject.FindProperty("m_PreserveAspect");
+            m_UseSpriteMesh         = serializedObject.FindProperty("m_UseSpriteMesh");
 
             m_ShowType = new AnimBool(m_Sprite.objectReferenceValue != null);
             m_ShowType.valueChanged.AddListener(Repaint);
@@ -90,6 +96,10 @@ namespace UnityEditor.UI
             if (EditorGUILayout.BeginFadeGroup(m_ShowNativeSize.faded))
             {
                 EditorGUI.indentLevel++;
+
+                if ((Image.Type)m_Type.enumValueIndex == Image.Type.Simple)
+                    EditorGUILayout.PropertyField(m_UseSpriteMesh);
+
                 EditorGUILayout.PropertyField(m_PreserveAspect);
                 EditorGUI.indentLevel--;
             }
@@ -129,6 +139,7 @@ namespace UnityEditor.UI
                         m_Type.enumValueIndex = (int)Image.Type.Simple;
                     }
                 }
+                (serializedObject.targetObject as Image).DisableSpriteOptimizations();
             }
         }
 
@@ -171,7 +182,7 @@ namespace UnityEditor.UI
                 if (EditorGUILayout.BeginFadeGroup(m_ShowTiled.faded))
                 {
                     if (image.sprite != null && !image.hasBorder && (image.sprite.texture.wrapMode != TextureWrapMode.Repeat || image.sprite.packed))
-                        EditorGUILayout.HelpBox("It looks like you want to tile a sprite with no border. It would be more efficient to convert the Sprite to an Advanced texture, clear the Packing tag and set the Wrap mode to Repeat.", MessageType.Warning);
+                        EditorGUILayout.HelpBox("It looks like you want to tile a sprite with no border. It would be more efficient to modify the Sprite properties, clear the Packing tag and set the Wrap mode to Repeat.", MessageType.Warning);
                 }
                 EditorGUILayout.EndFadeGroup();
 
@@ -234,8 +245,11 @@ namespace UnityEditor.UI
         }
 
         /// <summary>
-        /// Info String drawn at the bottom of the Preview
+        /// A string containing the Image details to be used as a overlay on the component Preview.
         /// </summary>
+        /// <returns>
+        /// The Image details.
+        /// </returns>
 
         public override string GetInfoString()
         {

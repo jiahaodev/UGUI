@@ -8,17 +8,42 @@ namespace UnityEngine.UI
 {
     [AddComponentMenu("Event/Graphic Raycaster")]
     [RequireComponent(typeof(Canvas))]
+    /// <summary>
+    /// A derived BaseRaycaster to raycast against Graphic elements.
+    /// </summary>
     public class GraphicRaycaster : BaseRaycaster
     {
         protected const int kNoEventMaskSet = -1;
+
+        /// <summary>
+        /// Type of raycasters to check against to check for canvas blocking elements.
+        /// </summary>
         public enum BlockingObjects
         {
+            /// <summary>
+            /// Perform no raycasts.
+            /// </summary>
             None = 0,
+            /// <summary>
+            /// Perform a 2D raycast check to check for blocking 2D elements
+            /// </summary>
             TwoD = 1,
+            /// <summary>
+            /// Perform a 3D raycast check to check for blocking 3D elements
+            /// </summary>
             ThreeD = 2,
+            /// <summary>
+            /// Perform a 2D and a 3D raycasts to check for blocking 2D and 3D elements.
+            /// </summary>
             All = 3,
         }
 
+        /// <summary>
+        /// Priority of the raycaster based upon sort order.
+        /// </summary>
+        /// <returns>
+        /// The sortOrder priority.
+        /// </returns>
         public override int sortOrderPriority
         {
             get
@@ -31,6 +56,12 @@ namespace UnityEngine.UI
             }
         }
 
+        /// <summary>
+        /// Priority of the raycaster based upon render order.
+        /// </summary>
+        /// <returns>
+        /// The renderOrder priority.
+        /// </returns>
         public override int renderOrderPriority
         {
             get
@@ -51,6 +82,10 @@ namespace UnityEngine.UI
         private BlockingObjects m_BlockingObjects = BlockingObjects.None;
 
         public bool ignoreReversedGraphics { get {return m_IgnoreReversedGraphics; } set { m_IgnoreReversedGraphics = value; } }
+
+        /// <summary>
+        /// Type of objects that will be check for to determine if they are blocking block graphic raycasts.
+        /// </summary>
         public BlockingObjects blockingObjects { get {return m_BlockingObjects; } set { m_BlockingObjects = value; } }
 
         [SerializeField]
@@ -74,6 +109,12 @@ namespace UnityEngine.UI
         }
 
         [NonSerialized] private List<Graphic> m_RaycastResults = new List<Graphic>();
+
+        /// <summary>
+        /// Perform the raycast against the list of graphics associated with the Canvas.
+        /// </summary>
+        /// <param name="eventData">Current event data</param>
+        /// <param name="resultAppendList">List of hit objects to append new results to.</param>
         public override void Raycast(PointerEventData eventData, List<RaycastResult> resultAppendList)
         {
             if (canvas == null)
@@ -84,7 +125,7 @@ namespace UnityEngine.UI
                 return;
 
             int displayIndex;
-            var currentEventCamera = eventCamera; // Propery can call Camera.main, so cache the reference
+            var currentEventCamera = eventCamera; // Property can call Camera.main, so cache the reference
 
             if (canvas.renderMode == RenderMode.ScreenSpaceOverlay || currentEventCamera == null)
                 displayIndex = canvas.targetDisplay;
@@ -175,6 +216,7 @@ namespace UnityEngine.UI
             }
 
             m_RaycastResults.Clear();
+
             Raycast(canvas, currentEventCamera, eventPosition, canvasGraphics, m_RaycastResults);
 
             int totalCount = m_RaycastResults.Count;
@@ -203,15 +245,15 @@ namespace UnityEngine.UI
                 if (appendGraphic)
                 {
                     float distance = 0;
+                    Transform trans = go.transform;
+                    Vector3 transForward = trans.forward;
 
                     if (currentEventCamera == null || canvas.renderMode == RenderMode.ScreenSpaceOverlay)
                         distance = 0;
                     else
                     {
-                        Transform trans = go.transform;
-                        Vector3 transForward = trans.forward;
                         // http://geomalgorithms.com/a06-_intersect-2.html
-                        distance = (Vector3.Dot(transForward, trans.position - currentEventCamera.transform.position) / Vector3.Dot(transForward, ray.direction));
+                        distance = (Vector3.Dot(transForward, trans.position - ray.origin) / Vector3.Dot(transForward, ray.direction));
 
                         // Check to see if the go is behind the camera.
                         if (distance < 0)
@@ -230,13 +272,23 @@ namespace UnityEngine.UI
                         index = resultAppendList.Count,
                         depth = m_RaycastResults[index].depth,
                         sortingLayer = canvas.sortingLayerID,
-                        sortingOrder = canvas.sortingOrder
+                        sortingOrder = canvas.sortingOrder,
+                        worldPosition = ray.origin + ray.direction * distance,
+                        worldNormal = -transForward
                     };
                     resultAppendList.Add(castResult);
                 }
             }
         }
 
+        /// <summary>
+        /// The camera that will generate rays for this raycaster.
+        /// </summary>
+        /// <returns>
+        /// - Null if Camera mode is ScreenSpaceOverlay or ScreenSpaceCamera and has no camera.
+        /// - canvas.worldCanvas if not null
+        /// - Camera.main.
+        /// </returns>
         public override Camera eventCamera
         {
             get
@@ -254,7 +306,6 @@ namespace UnityEngine.UI
         [NonSerialized] static readonly List<Graphic> s_SortedGraphics = new List<Graphic>();
         private static void Raycast(Canvas canvas, Camera eventCamera, Vector2 pointerPosition, IList<Graphic> foundGraphics, List<Graphic> results)
         {
-            // Debug.Log("ttt" + pointerPoision + ":::" + camera);
             // Necessary for the event system
             int totalCount = foundGraphics.Count;
             for (int i = 0; i < totalCount; ++i)
@@ -268,6 +319,9 @@ namespace UnityEngine.UI
                 if (!RectTransformUtility.RectangleContainsScreenPoint(graphic.rectTransform, pointerPosition, eventCamera))
                     continue;
 
+                if (eventCamera != null && eventCamera.WorldToScreenPoint(graphic.rectTransform.position).z > eventCamera.farClipPlane)
+                    continue;
+
                 if (graphic.Raycast(pointerPosition, eventCamera))
                 {
                     s_SortedGraphics.Add(graphic);
@@ -275,11 +329,9 @@ namespace UnityEngine.UI
             }
 
             s_SortedGraphics.Sort((g1, g2) => g2.depth.CompareTo(g1.depth));
-            //      StringBuilder cast = new StringBuilder();
             totalCount = s_SortedGraphics.Count;
             for (int i = 0; i < totalCount; ++i)
                 results.Add(s_SortedGraphics[i]);
-            //      Debug.Log (cast.ToString());
 
             s_SortedGraphics.Clear();
         }

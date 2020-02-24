@@ -4,6 +4,9 @@ using UnityEngine.Rendering;
 
 namespace UnityEngine.UI
 {
+    /// <summary>
+    /// A Graphic that is capable of being masked out.
+    /// </summary>
     public abstract class MaskableGraphic : Graphic, IClippable, IMaskable, IMaterialModifier
     {
         [NonSerialized]
@@ -25,6 +28,7 @@ namespace UnityEngine.UI
         private bool m_Maskable = true;
 
         [NonSerialized]
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [Obsolete("Not used anymore.", true)]
         protected bool m_IncludeForMasking = false;
 
@@ -35,12 +39,21 @@ namespace UnityEngine.UI
         [SerializeField]
         private CullStateChangedEvent m_OnCullStateChanged = new CullStateChangedEvent();
 
+        /// <summary>
+        /// Callback issued when culling changes.
+        /// </summary>
+        /// <remarks>
+        /// Called whene the culling state of this MaskableGraphic either becomes culled or visible. You can use this to control other elements of your UI as culling happens.
+        /// </remarks>
         public CullStateChangedEvent onCullStateChanged
         {
             get { return m_OnCullStateChanged; }
             set { m_OnCullStateChanged = value; }
         }
 
+        /// <summary>
+        /// Does this graphic allow masking.
+        /// </summary>
         public bool maskable
         {
             get { return m_Maskable; }
@@ -55,12 +68,16 @@ namespace UnityEngine.UI
         }
 
         [NonSerialized]
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [Obsolete("Not used anymore", true)]
         protected bool m_ShouldRecalculate = true;
 
         [NonSerialized]
         protected int m_StencilValue;
 
+        /// <summary>
+        /// See IMaterialModifier.GetModifiedMaterial
+        /// </summary>
         public virtual Material GetModifiedMaterial(Material baseMaterial)
         {
             var toUse = baseMaterial;
@@ -86,6 +103,9 @@ namespace UnityEngine.UI
             return toUse;
         }
 
+        /// <summary>
+        /// See IClippable.Cull
+        /// </summary>
         public virtual void Cull(Rect clipRect, bool validRect)
         {
             var cull = !validRect || !clipRect.Overlaps(rootCanvasRect, true);
@@ -94,17 +114,18 @@ namespace UnityEngine.UI
 
         private void UpdateCull(bool cull)
         {
-            var cullingChanged = canvasRenderer.cull != cull;
-            canvasRenderer.cull = cull;
-
-            if (cullingChanged)
+            if (canvasRenderer.cull != cull)
             {
+                canvasRenderer.cull = cull;
                 UISystemProfilerApi.AddMarker("MaskableGraphic.cullingChanged", this);
                 m_OnCullStateChanged.Invoke(cull);
-                SetVerticesDirty();
+                OnCullingChanged();
             }
         }
 
+        /// <summary>
+        /// See IClippable.SetClipRect
+        /// </summary>
         public virtual void SetClipRect(Rect clipRect, bool validRect)
         {
             if (validRect)
@@ -164,6 +185,7 @@ namespace UnityEngine.UI
             SetMaterialDirty();
         }
 
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [Obsolete("Not used anymore.", true)]
         public virtual void ParentMaskStateChanged() {}
 
@@ -188,12 +210,24 @@ namespace UnityEngine.UI
 
                 if (canvas)
                 {
-                    Canvas rootCanvas = canvas.rootCanvas;
+                    Matrix4x4 mat = canvas.rootCanvas.transform.worldToLocalMatrix;
                     for (int i = 0; i < 4; ++i)
-                        m_Corners[i] = rootCanvas.transform.InverseTransformPoint(m_Corners[i]);
+                        m_Corners[i] = mat.MultiplyPoint(m_Corners[i]);
                 }
 
-                return new Rect(m_Corners[0].x, m_Corners[0].y, m_Corners[2].x - m_Corners[0].x, m_Corners[2].y - m_Corners[0].y);
+                // bounding box is now based on the min and max of all corners (case 1013182)
+
+                Vector2 min = m_Corners[0];
+                Vector2 max = m_Corners[0];
+                for (int i = 1; i < 4; i++)
+                {
+                    min.x = Mathf.Min(m_Corners[i].x, min.x);
+                    min.y = Mathf.Min(m_Corners[i].y, min.y);
+                    max.x = Mathf.Max(m_Corners[i].x, max.x);
+                    max.y = Mathf.Max(m_Corners[i].y, max.y);
+                }
+
+                return new Rect(min, max - min);
             }
         }
 
@@ -215,13 +249,23 @@ namespace UnityEngine.UI
             m_ParentMask = newParent;
         }
 
+        /// <summary>
+        /// See IClippable.RecalculateClipping
+        /// </summary>
         public virtual void RecalculateClipping()
         {
             UpdateClipParent();
         }
 
+        /// <summary>
+        /// See IMaskable.RecalculateMasking
+        /// </summary>
         public virtual void RecalculateMasking()
         {
+            // Remove the material reference as either the graphic of the mask has been enable/ disabled.
+            // This will cause the material to be repopulated from the original if need be. (case 994413)
+            StencilMaterial.Remove(m_MaskMaterial);
+            m_MaskMaterial = null;
             m_ShouldRecalculateStencil = true;
             SetMaterialDirty();
         }

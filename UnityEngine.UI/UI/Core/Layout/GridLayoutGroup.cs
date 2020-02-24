@@ -4,28 +4,120 @@ using System.Collections.Generic;
 namespace UnityEngine.UI
 {
     [AddComponentMenu("Layout/Grid Layout Group", 152)]
+    /// <summary>
+    ///   Layout class to arrange children elements in a grid format.
+    /// </summary>
+    /// <remarks>
+    /// The GridLayoutGroup component is used to layout child layout elements in a uniform grid where all cells have the same size. The size and the spacing between cells is controlled by the GridLayoutGroup itself. The children have no influence on their sizes.
+    /// </remarks>
     public class GridLayoutGroup : LayoutGroup
     {
-        public enum Corner { UpperLeft = 0, UpperRight = 1, LowerLeft = 2, LowerRight = 3 }
-        public enum Axis { Horizontal = 0, Vertical = 1 }
-        public enum Constraint { Flexible = 0, FixedColumnCount = 1, FixedRowCount = 2 }
+        /// <summary>
+        /// Which corner is the starting corner for the grid.
+        /// </summary>
+        public enum Corner
+        {
+            /// <summary>
+            /// Upper Left corner.
+            /// </summary>
+            UpperLeft = 0,
+            /// <summary>
+            /// Upper Right corner.
+            /// </summary>
+            UpperRight = 1,
+            /// <summary>
+            /// Lower Left corner.
+            /// </summary>
+            LowerLeft = 2,
+            /// <summary>
+            /// Lower Right corner.
+            /// </summary>
+            LowerRight = 3
+        }
+
+        /// <summary>
+        /// The grid axis we are looking at.
+        /// </summary>
+        /// <remarks>
+        /// As the storage is a [][] we make access easier by passing a axis.
+        /// </remarks>
+        public enum Axis
+        {
+            /// <summary>
+            /// Horizontal axis
+            /// </summary>
+            Horizontal = 0,
+            /// <summary>
+            /// Vertical axis.
+            /// </summary>
+            Vertical = 1
+        }
+
+        /// <summary>
+        /// Constraint type on either the number of columns or rows.
+        /// </summary>
+        public enum Constraint
+        {
+            /// <summary>
+            /// Don't constrain the number of rows or columns.
+            /// </summary>
+            Flexible = 0,
+            /// <summary>
+            /// Constrain the number of columns to a specified number.
+            /// </summary>
+            FixedColumnCount = 1,
+            /// <summary>
+            /// Constraint the number of rows to a specified number.
+            /// </summary>
+            FixedRowCount = 2
+        }
 
         [SerializeField] protected Corner m_StartCorner = Corner.UpperLeft;
+
+        /// <summary>
+        /// Which corner should the first cell be placed in?
+        /// </summary>
         public Corner startCorner { get { return m_StartCorner; } set { SetProperty(ref m_StartCorner, value); } }
 
         [SerializeField] protected Axis m_StartAxis = Axis.Horizontal;
+
+        /// <summary>
+        /// Which axis should cells be placed along first
+        /// </summary>
+        /// <remarks>
+        /// When startAxis is set to horizontal, an entire row will be filled out before proceeding to the next row. When set to vertical, an entire column will be filled out before proceeding to the next column.
+        /// </remarks>
         public Axis startAxis { get { return m_StartAxis; } set { SetProperty(ref m_StartAxis, value); } }
 
         [SerializeField] protected Vector2 m_CellSize = new Vector2(100, 100);
+
+        /// <summary>
+        /// The size to use for each cell in the grid.
+        /// </summary>
         public Vector2 cellSize { get { return m_CellSize; } set { SetProperty(ref m_CellSize, value); } }
 
         [SerializeField] protected Vector2 m_Spacing = Vector2.zero;
+
+        /// <summary>
+        /// The spacing to use between layout elements in the grid on both axises.
+        /// </summary>
         public Vector2 spacing { get { return m_Spacing; } set { SetProperty(ref m_Spacing, value); } }
 
         [SerializeField] protected Constraint m_Constraint = Constraint.Flexible;
+
+        /// <summary>
+        /// Which constraint to use for the GridLayoutGroup.
+        /// </summary>
+        /// <remarks>
+        /// Specifying a constraint can make the GridLayoutGroup work better in conjunction with a [[ContentSizeFitter]] component. When GridLayoutGroup is used on a RectTransform with a manually specified size, there's no need to specify a constraint.
+        /// </remarks>
         public Constraint constraint { get { return m_Constraint; } set { SetProperty(ref m_Constraint, value); } }
 
         [SerializeField] protected int m_ConstraintCount = 2;
+
+        /// <summary>
+        /// How many cells there should be along the constrained axis.
+        /// </summary>
         public int constraintCount { get { return m_ConstraintCount; } set { SetProperty(ref m_ConstraintCount, Mathf.Max(1, value)); } }
 
         protected GridLayoutGroup()
@@ -40,6 +132,10 @@ namespace UnityEngine.UI
 
         #endif
 
+        /// <summary>
+        /// Called by the layout system to calculate the horizontal layout size.
+        /// Also see ILayoutElement
+        /// </summary>
         public override void CalculateLayoutInputHorizontal()
         {
             base.CalculateLayoutInputHorizontal();
@@ -66,6 +162,10 @@ namespace UnityEngine.UI
                 -1, 0);
         }
 
+        /// <summary>
+        /// Called by the layout system to calculate the vertical layout size.
+        /// Also see ILayoutElement
+        /// </summary>
         public override void CalculateLayoutInputVertical()
         {
             int minRows = 0;
@@ -79,7 +179,7 @@ namespace UnityEngine.UI
             }
             else
             {
-                float width = rectTransform.rect.size.x;
+                float width = rectTransform.rect.width;
                 int cellCountX = Mathf.Max(1, Mathf.FloorToInt((width - padding.horizontal + spacing.x + 0.001f) / (cellSize.x + spacing.x)));
                 minRows = Mathf.CeilToInt(rectChildren.Count / (float)cellCountX);
             }
@@ -88,11 +188,19 @@ namespace UnityEngine.UI
             SetLayoutInputForAxis(minSpace, minSpace, -1, 1);
         }
 
+        /// <summary>
+        /// Called by the layout system
+        /// Also see ILayoutElement
+        /// </summary>
         public override void SetLayoutHorizontal()
         {
             SetCellsAlongAxis(0);
         }
 
+        /// <summary>
+        /// Called by the layout system
+        /// Also see ILayoutElement
+        /// </summary>
         public override void SetLayoutVertical()
         {
             SetCellsAlongAxis(1);
@@ -133,12 +241,16 @@ namespace UnityEngine.UI
             if (m_Constraint == Constraint.FixedColumnCount)
             {
                 cellCountX = m_ConstraintCount;
-                cellCountY = Mathf.CeilToInt(rectChildren.Count / (float)cellCountX - 0.001f);
+
+                if (rectChildren.Count > cellCountX)
+                    cellCountY = rectChildren.Count / cellCountX + (rectChildren.Count % cellCountX > 0 ? 1 : 0);
             }
             else if (m_Constraint == Constraint.FixedRowCount)
             {
                 cellCountY = m_ConstraintCount;
-                cellCountX = Mathf.CeilToInt(rectChildren.Count / (float)cellCountY - 0.001f);
+
+                if (rectChildren.Count > cellCountY)
+                    cellCountX = rectChildren.Count / cellCountY + (rectChildren.Count % cellCountY > 0 ? 1 : 0);
             }
             else
             {
@@ -171,13 +283,13 @@ namespace UnityEngine.UI
             }
 
             Vector2 requiredSpace = new Vector2(
-                    actualCellCountX * cellSize.x + (actualCellCountX - 1) * spacing.x,
-                    actualCellCountY * cellSize.y + (actualCellCountY - 1) * spacing.y
-                    );
+                actualCellCountX * cellSize.x + (actualCellCountX - 1) * spacing.x,
+                actualCellCountY * cellSize.y + (actualCellCountY - 1) * spacing.y
+            );
             Vector2 startOffset = new Vector2(
-                    GetStartOffset(0, requiredSpace.x),
-                    GetStartOffset(1, requiredSpace.y)
-                    );
+                GetStartOffset(0, requiredSpace.x),
+                GetStartOffset(1, requiredSpace.y)
+            );
 
             for (int i = 0; i < rectChildren.Count; i++)
             {

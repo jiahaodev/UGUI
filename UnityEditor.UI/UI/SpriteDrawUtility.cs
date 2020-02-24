@@ -3,7 +3,10 @@ using UnityEngine;
 
 namespace UnityEditor.UI
 {
-    // Tools for the editor
+    /// <summary>
+    /// PropertyDrawer for [[SpriteState]].
+    /// This is a PropertyDrawer for SpriteState it is implemented using the standard unity PropertyDrawer framework.
+    /// </summary>
     internal class SpriteDrawUtility
     {
         static Texture2D s_ContrastTex;
@@ -15,8 +18,8 @@ namespace UnityEditor.UI
             {
                 if (s_ContrastTex == null)
                     s_ContrastTex = CreateCheckerTex(
-                            new Color(0f, 0.0f, 0f, 0.5f),
-                            new Color(1f, 1f, 1f, 0.5f));
+                        new Color(0f, 0.0f, 0f, 0.5f),
+                        new Color(1f, 1f, 1f, 0.5f));
                 return s_ContrastTex;
             }
         }
@@ -143,17 +146,15 @@ namespace UnityEditor.UI
             GUI.color = color;
 
             Rect paddedTexArea = new Rect(
-                    outerRect.x + outerRect.width * padding.x,
-                    outerRect.y + outerRect.height * padding.w,
-                    outerRect.width - (outerRect.width * (padding.z + padding.x)),
-                    outerRect.height - (outerRect.height * (padding.w + padding.y))
-                    );
+                outerRect.x + outerRect.width * padding.x,
+                outerRect.y + outerRect.height * padding.w,
+                outerRect.width - (outerRect.width * (padding.z + padding.x)),
+                outerRect.height - (outerRect.height * (padding.w + padding.y))
+            );
 
             if (mat == null)
             {
-                GL.sRGBWrite = QualitySettings.activeColorSpace == ColorSpace.Linear;
                 GUI.DrawTextureWithTexCoords(paddedTexArea, tex, uv, true);
-                GL.sRGBWrite = false;
             }
             else
             {
