@@ -155,21 +155,27 @@ namespace UnityEngine.UI
             var components = ListPool<Component>.Get();
             rect.GetComponents(typeof(ILayoutElement), components);
 
+            //遍历每一个实现ILayoutElement接口的子对象（Image和Text都实现了ILayoutElement接口）
+            //或者绑定了LayoutElement对象的脚本也实现了ILayoutElement接口
             for (int i = 0; i < components.Count; i++)
             {
+                //确保layoutComp对象有效
                 var layoutComp = components[i] as ILayoutElement;
                 if (layoutComp is Behaviour && !((Behaviour)layoutComp).isActiveAndEnabled)
                     continue;
 
+                //确保当前优先级小于最大优先级
                 int priority = layoutComp.layoutPriority;
                 // If this layout components has lower priority than a previously used, ignore it.
                 if (priority < maxPriority)
                     continue;
+
                 float prop = property(layoutComp);
                 // If this layout property is set to a negative value, it means it should be ignored.
                 if (prop < 0)
                     continue;
 
+                //如果有更高的优先级，那么就覆盖最小数值，并且覆盖最大优先级数值
                 // If this layout component has higher priority than all previous ones,
                 // overwrite with this one's value.
                 if (priority > maxPriority)

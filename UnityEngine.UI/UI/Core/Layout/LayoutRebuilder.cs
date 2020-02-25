@@ -219,6 +219,7 @@ namespace UnityEngine.UI
 
             var rebuilder = s_Rebuilders.Get();
             rebuilder.Initialize(controller);
+            //局部发生变化，会通过TryRegisterCanvasElementForLayoutRebuild()将自己加入待布局重建队列
             if (!CanvasUpdateRegistry.TryRegisterCanvasElementForLayoutRebuild(rebuilder))
                 s_Rebuilders.Release(rebuilder);
         }

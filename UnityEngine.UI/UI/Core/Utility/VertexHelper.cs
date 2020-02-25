@@ -1,3 +1,11 @@
+/****************************************************
+    文件：VertexHelper.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/25 16:25       
+    功能：生成Mesh所需信息保存
+          保存了生成Mesh的基本信息（并非Mesh对象），最后通过这些基本信息就可以生成Mesh网格了
+*****************************************************/
 using System;
 using System.Collections.Generic;
 
@@ -7,7 +15,7 @@ namespace UnityEngine.UI
     /// A utility class that can aid in the generation of meshes for the UI.
     /// </summary>
     /// <remarks>
-    /// This class implements IDisposable to aid with memory management.
+    /// This class implements IDisposable to aid(帮助) with memory management.
     /// </remarks>
     /// <example>
     /// <code>

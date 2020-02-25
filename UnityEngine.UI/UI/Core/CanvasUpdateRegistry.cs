@@ -1,3 +1,12 @@
+/****************************************************
+    文件：CanvasUpdateRegistry.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/25 12:22       
+    功能：画布更新登记（注册）
+    todo: 实战使用，可以通过外部可以通过检测这两个序列，知道是哪些元素导致了rebuild
+          https://www.cnblogs.com/chenggg/p/11184784.html  中NewBehaviourScript.cs
+*****************************************************/
 using System;
 using System.Collections.Generic;
 using UnityEngine.UI.Collections;
@@ -7,7 +16,7 @@ namespace UnityEngine.UI
     /// <summary>
     /// Values of 'update' called on a Canvas update.
     /// </summary>
-    /// 除了最后一个枚举项，其他五个项分别代表了“布局的三个阶段”和“渲染的两个阶段”。
+    /// 【枚举】除了最后一个枚举项，其他五个项分别代表了“布局的三个阶段”和“渲染的两个阶段”。
     public enum CanvasUpdate
     {
         /// <summary>
@@ -39,12 +48,14 @@ namespace UnityEngine.UI
     /// <summary>
     /// This is an element that can live on a Canvas.
     /// </summary>
+    /// Canvas上“存活”子对象需要实现的接口
     public interface ICanvasElement
     {
         /// <summary>
         /// Rebuild the element for the given stage.
         /// </summary>
         /// <param name="executing">The current CanvasUpdate stage being rebuild.</param>
+        /// executing 表示画布更新的阶段（5个阶段），为枚举值。见CanvasUpdate
         void Rebuild(CanvasUpdate executing);
 
         /// <summary>
@@ -55,11 +66,13 @@ namespace UnityEngine.UI
         /// <summary>
         /// Callback sent when this ICanvasElement has completed layout.
         /// </summary>
+        /// 布局更新完成
         void LayoutComplete();
 
         /// <summary>
         /// Callback sent when this ICanvasElement has completed Graphic rebuild.
         /// </summary>
+        /// 图形更新完成
         void GraphicUpdateComplete();
 
         /// <summary>
@@ -73,20 +86,26 @@ namespace UnityEngine.UI
     /// A place where CanvasElements can register themselves for rebuilding.
     /// </summary>
     /// 【单例】它是UGUI与Canvas之间的中介，实现了ICanvasElement接口的组件都可以注册到它，
-    /// 它监听了Canvas即将渲染的事件，并调用已注册组件的Rebuild等方法。
+    /// 它监听了Canvas即将渲染的事件（其实是委托），并调用已注册组件的Rebuild等方法。
+    /// https://edu.uwa4d.com/lesson-detail/79/99/0?isPreview=0
     public class CanvasUpdateRegistry
     {
         private static CanvasUpdateRegistry s_Instance;
 
         private bool m_PerformingLayoutUpdate;
         private bool m_PerformingGraphicUpdate;
-        //布局重建序列索引集
+        //布局重建序列索引集（核心1）
         private readonly IndexedSet<ICanvasElement> m_LayoutRebuildQueue = new IndexedSet<ICanvasElement>();
-        //图形重建序列索引集
+        //图形重建序列索引集（核心2）
         private readonly IndexedSet<ICanvasElement> m_GraphicRebuildQueue = new IndexedSet<ICanvasElement>();
+
+        //注意：IndexedSet是UGUI内部自定义的集合类，可以自行查看源定义
+
 
         protected CanvasUpdateRegistry()
         {
+            //Canvas中willRenderCanvases委托，会在Canvas.SendWillCanvases()中调用。
+            //https://edu.uwa4d.com/lesson-detail/79/99/0?isPreview=0
             Canvas.willRenderCanvases += PerformUpdate;
         }
 
@@ -114,6 +133,8 @@ namespace UnityEngine.UI
             return valid;
         }
 
+
+        //移除两个更新序列中，无效的item
         private void CleanInvalidItems()
         {
             // So MB's override the == operator for null equality, which checks
@@ -155,9 +176,24 @@ namespace UnityEngine.UI
             }
         }
 
+        //根据，obj往上有多少个父节点，进行排序（由少到多）
+        //其实是，布局深度（深度：A/B/C/D/../E）
         private static readonly Comparison<ICanvasElement> s_SortLayoutFunction = SortLayoutList;
+
+        /// <summary>
+        ///这里需要思考的是，有可能一个Image对象，RectTransform和Graphics同时发生了修改，它们的更新含义不同需要区分对待
+        ///1.修改了Image的宽高，这样Mesh的顶点会发生变化，此时该对象会加入m_LayoutRebuildQueue队列
+        ///2.修改了Image的Sprite，它并不会影响顶点位置信息，此时该对象会加入m_GraphicRebuildQueue队列
+        ///所以上面代码在遍历的时候会分层
+        ////for (int i = 0; i <= (int)CanvasUpdate.PostLayout; i++)
+        ////for (var i = (int)CanvasUpdate.PreRender; i < (int)CanvasUpdate.MaxUpdateValue; i++)
+        ///Rebuild的时候会把层传进去，保证Image知道现在是要更新布局，还是只更新渲染。
+        /// </summary>
         private void PerformUpdate()
         {
+            //开始BeginSample()
+            //在Profiler中看到的标志性函数Canvas.willRenderCanvases耗时就在这里了
+            //EndSample()
             UISystemProfilerApi.BeginSample(UISystemProfilerApi.SampleType.Layout);
             CleanInvalidItems();//从两个序列中，删除不可用元素
             //（1）布局更新开始
@@ -173,7 +209,7 @@ namespace UnityEngine.UI
                     try
                     {
                         if (ObjectValidForUpdate(rebuild))
-                            rebuild.Rebuild((CanvasUpdate)i);
+                            rebuild.Rebuild((CanvasUpdate)i);//重建布局元素
                     }
                     catch (Exception e)
                     {
@@ -182,6 +218,7 @@ namespace UnityEngine.UI
                 }
             }
 
+            //调用布局更新完成的接口
             for (int i = 0; i < m_LayoutRebuildQueue.Count; ++i)
                 m_LayoutRebuildQueue[i].LayoutComplete();
 
@@ -189,7 +226,8 @@ namespace UnityEngine.UI
             m_PerformingLayoutUpdate = false;
 
             // now layout is complete do culling...
-            ClipperRegistry.instance.Cull();
+            // 布局构建结束，开始进行Mask2D裁切（详细内容下面会介绍）
+            ClipperRegistry.instance.Cull(); 
 
             //（2）图形更新开始
             m_PerformingGraphicUpdate = true;
@@ -202,7 +240,7 @@ namespace UnityEngine.UI
                     {
                         var element = instance.m_GraphicRebuildQueue[k];
                         if (ObjectValidForUpdate(element))
-                            element.Rebuild((CanvasUpdate)i);
+                            element.Rebuild((CanvasUpdate)i);//重建UI元素
                     }
                     catch (Exception e)
                     {
@@ -211,6 +249,7 @@ namespace UnityEngine.UI
                 }
             }
 
+            //调用图形更新成功的接口
             for (int i = 0; i < m_GraphicRebuildQueue.Count; ++i)
                 m_GraphicRebuildQueue[i].GraphicUpdateComplete();
 
@@ -219,6 +258,8 @@ namespace UnityEngine.UI
             UISystemProfilerApi.EndSample(UISystemProfilerApi.SampleType.Layout);
         }
 
+        //计算child向上有个多少个父节点
+        //其实就是计算节点的深度
         private static int ParentCount(Transform child)
         {
             if (child == null)
@@ -260,6 +301,7 @@ namespace UnityEngine.UI
         /// True if the element was successfully added to the rebuilt list.
         /// False if either already inside a Graphic Update loop OR has already been added to the list.
         /// </returns>
+        /// 相对上一个函数，多了一个返回“操作结果”的过程
         public static bool TryRegisterCanvasElementForLayoutRebuild(ICanvasElement element)
         {
             return instance.InternalRegisterCanvasElementForLayoutRebuild(element);

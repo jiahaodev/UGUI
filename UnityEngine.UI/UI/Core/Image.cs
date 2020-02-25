@@ -1,3 +1,13 @@
+/****************************************************
+    文件：Image.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/25 16:04       
+    功能：Image
+    参考：关于UGUI的Image,Text
+          https://www.cnblogs.com/chenggg/p/11185962.html
+    拓展：不同的UI使用相同的材质、Shader、贴图，只是它们拥有不同的UV信息，这符合Draw Call合并的规则，所以就能合批。
+*****************************************************/
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -19,6 +29,7 @@ namespace UnityEngine.UI
         /// <summary>
         /// Image fill type controls how to display the image.
         /// </summary>
+        /// 4种显示模式：正常、九宫、平铺、填充
         public enum Type
         {
             /// <summary>
@@ -910,10 +921,12 @@ namespace UnityEngine.UI
         void GenerateSimpleSprite(VertexHelper vh, bool lPreserveAspect)
         {
             Vector4 v = GetDrawingDimensions(lPreserveAspect);
+            //获取根据Sprite获取正确的UV信息
             var uv = (activeSprite != null) ? Sprites.DataUtility.GetOuterUV(activeSprite) : Vector4.zero;
 
             var color32 = color;
             vh.Clear();
+            //填充顶点、颜色、uv
             vh.AddVert(new Vector3(v.x, v.y), color32, new Vector2(uv.x, uv.y));
             vh.AddVert(new Vector3(v.x, v.w), color32, new Vector2(uv.x, uv.w));
             vh.AddVert(new Vector3(v.z, v.w), color32, new Vector2(uv.z, uv.w));

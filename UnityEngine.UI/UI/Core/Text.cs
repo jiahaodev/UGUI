@@ -1,3 +1,14 @@
+/****************************************************
+    文件：Text.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/25 16:11       
+    功能：Text
+    参考：https://www.cnblogs.com/chenggg/p/11185962.html
+    拓展：UGUI的Text就是位图字体，先通过TTF字体将字体形状生成在位图中，接着就是将正确的UV设置给字体的Mesh，这和前面介绍的Image组件几乎一样了。
+         首先需要根据文本的区域、字体、填充文字调用GetGenerationSettings()创建文本生成器，顶点、uv信息都会被填充好，
+         由于每个文本都是一个Quad，所以还需要设置它们的位置。 
+*****************************************************/
 using System;
 using System.Collections.Generic;
 
@@ -38,7 +49,7 @@ namespace UnityEngine.UI
         /// <summary>
         /// The cached TextGenerator used when generating visible Text.
         /// </summary>
-
+        //字体生成器
         public TextGenerator cachedTextGenerator
         {
             get { return m_TextCache ?? (m_TextCache = (m_Text.Length != 0 ? new TextGenerator(m_Text.Length) : new TextGenerator())); }
@@ -440,7 +451,7 @@ namespace UnityEngine.UI
                 if (m_FontData.fontSize == value)
                     return;
                 m_FontData.fontSize = value;
-
+                //由于字体大小的变化只会影响布局信息和顶点信息，那么就调用SetVerticesDirty();SetLayoutDirty();方法即可。 
                 SetVerticesDirty();
                 SetLayoutDirty();
             }
@@ -593,8 +604,9 @@ namespace UnityEngine.UI
         /// <returns>Generated settings.</returns>
         public TextGenerationSettings GetGenerationSettings(Vector2 extents)
         {
+            //字体设置信息
             var settings = new TextGenerationSettings();
-
+            //下面对Text信息进行提取
             settings.generationExtents = extents;
             if (font != null && font.dynamic)
             {
@@ -653,8 +665,9 @@ namespace UnityEngine.UI
             m_DisableFontTextureRebuiltCallback = true;
 
             Vector2 extents = rectTransform.rect.size;
-
+            //获取字体的生成规则设置
             var settings = GetGenerationSettings(extents);
+            //根据待填充字体、生成规则，生成顶点信息
             cachedTextGenerator.PopulateWithErrors(text, settings, gameObject);
 
             // Apply the offset to the vertices
@@ -677,10 +690,13 @@ namespace UnityEngine.UI
                 for (int i = 0; i < vertCount; ++i)
                 {
                     int tempVertsIndex = i & 3;
+                    //填充顶点信息
                     m_TempVerts[tempVertsIndex] = verts[i];
+                    //设置字体偏移
                     m_TempVerts[tempVertsIndex].position *= unitsPerPixel;
                     m_TempVerts[tempVertsIndex].position.x += roundingOffset.x;
                     m_TempVerts[tempVertsIndex].position.y += roundingOffset.y;
+                    //填充UI顶点面片
                     if (tempVertsIndex == 3)
                         toFill.AddUIVertexQuad(m_TempVerts);
                 }

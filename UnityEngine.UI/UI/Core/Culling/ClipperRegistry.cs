@@ -41,6 +41,7 @@ namespace UnityEngine.UI
         /// </summary>
         public void Cull()
         {
+            //遍历界面中的所有Mask2D组件，并且调用每个组件的PerformClipping()方法。
             for (var i = 0; i < m_Clippers.Count; ++i)
             {
                 m_Clippers[i].PerformClipping();

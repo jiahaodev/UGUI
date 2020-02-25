@@ -205,6 +205,7 @@ namespace UnityEngine.UI
         private void GetChildSizes(RectTransform child, int axis, bool controlSize, bool childForceExpand,
             out float min, out float preferred, out float flexible)
         {
+            //获取每个子元素的区域，min最小区域、preferred准确区域、flexible弹性区域
             if (!controlSize)
             {
                 min = child.sizeDelta[axis];

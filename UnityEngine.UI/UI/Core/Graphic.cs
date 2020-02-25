@@ -1,3 +1,13 @@
+/****************************************************
+    文件：Graphic.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/25 14:43       
+    功能：Graphic [ˈgræfɪk] 是所有（图形类）UI组件的基类
+    理解：为什么UI发生变化一定要加入待重建队列中呢？
+          其实这个不难想象，一个UI界面同一帧可能有N个对象发生变化，任意一个发生变化都需要重建UI那么肯定会卡死。
+          所以我们先把需要重建的UI加入队列，等待一个统一的时机来合并。 
+*****************************************************/
 using System;
 #if UNITY_EDITOR
 using System.Reflection;
@@ -194,12 +204,14 @@ namespace UnityEngine.UI
         /// Set all properties of the Graphic dirty and needing rebuilt.
         /// Dirties Layout, Vertices, and Materials.
         /// </summary>
+        /// 元素的改变可分为：布局变化、顶点变化、材质变化
         public virtual void SetAllDirty()
         {
             // Optimization: Graphic layout doesn't need recalculation if
             // the underlying Sprite is the same size with the same texture.
             // (e.g. Sprite sheet texture animation)
 
+            //更新布局
             if (m_SkipLayoutUpdate)
             {
                 m_SkipLayoutUpdate = false;
@@ -208,7 +220,7 @@ namespace UnityEngine.UI
             {
                 SetLayoutDirty();
             }
-
+            //更新材质
             if (m_SkipMaterialUpdate)
             {
                 m_SkipMaterialUpdate = false;
@@ -217,7 +229,7 @@ namespace UnityEngine.UI
             {
                 SetMaterialDirty();
             }
-
+            //更新顶点
             SetVerticesDirty();
         }
 
@@ -231,7 +243,7 @@ namespace UnityEngine.UI
         {
             if (!IsActive())
                 return;
-
+            //加入待布局队列
             LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
 
             if (m_OnDirtyLayoutCallback != null)
@@ -250,6 +262,7 @@ namespace UnityEngine.UI
                 return;
 
             m_VertsDirty = true;
+            //加入待渲染队列
             CanvasUpdateRegistry.RegisterCanvasElementForGraphicRebuild(this);
 
             if (m_OnDirtyVertsCallback != null)
@@ -268,6 +281,7 @@ namespace UnityEngine.UI
                 return;
 
             m_MaterialDirty = true;
+            //加入渲染队列
             CanvasUpdateRegistry.RegisterCanvasElementForGraphicRebuild(this);
 
             if (m_OnDirtyMaterialCallback != null)
@@ -291,7 +305,9 @@ namespace UnityEngine.UI
 
         protected override void OnBeforeTransformParentChanged()
         {
+            //Deregister the given Graphic from a Canvas.
             GraphicRegistry.UnregisterGraphicForCanvas(canvas, this);
+            //Mark the given RectTransform as needing it's layout to be recalculated during the next layout pass.
             LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
         }
 
@@ -306,7 +322,8 @@ namespace UnityEngine.UI
 
             CacheCanvas();
             GraphicRegistry.RegisterGraphicForCanvas(canvas, this);
-            SetAllDirty();
+            //全部重建（布局、材质、顶点）
+            SetAllDirty(); 
         }
 
         /// <summary>
@@ -438,13 +455,17 @@ namespace UnityEngine.UI
         {
             get
             {
+                //遍历UI中的每个Mask组件
                 var components = ListPool<Component>.Get();
                 GetComponents(typeof(IMaterialModifier), components);
 
+                //并且更新每个Mask组件的模板缓冲材质
                 var currentMat = material;
                 for (var i = 0; i < components.Count; i++)
                     currentMat = (components[i] as IMaterialModifier).GetModifiedMaterial(currentMat);
                 ListPool<Component>.Release(components);
+
+                //返回新的材质，用于裁切
                 return currentMat;
             }
         }
@@ -569,11 +590,13 @@ namespace UnityEngine.UI
                 case CanvasUpdate.PreRender:
                     if (m_VertsDirty)
                     {
+                        //更新网格顶点信息
                         UpdateGeometry();
                         m_VertsDirty = false;
                     }
                     if (m_MaterialDirty)
                     {
+                        //更新渲染信息
                         UpdateMaterial();
                         m_MaterialDirty = false;
                     }
@@ -594,7 +617,7 @@ namespace UnityEngine.UI
         {
             if (!IsActive())
                 return;
-
+            //更新刚刚替换的新的模板缓冲的材质
             canvasRenderer.materialCount = 1;
             canvasRenderer.SetMaterial(materialForRendering, 0);
             canvasRenderer.SetTexture(mainTexture);
@@ -603,26 +626,30 @@ namespace UnityEngine.UI
         /// <summary>
         /// Call to update the geometry of the Graphic onto the CanvasRenderer.
         /// </summary>
+        /// UpdateGeometry（更新几何网格），就是确定每一个UI元素Mesh的信息，包括顶点数据、三角形数据、UV数据、顶点色数据。
         protected virtual void UpdateGeometry()
         {
+            //Image RawIamge Text 在构造函数都给useLegacyMeshGeneration 赋值为 false
             if (useLegacyMeshGeneration)
             {
                 DoLegacyMeshGeneration();
             }
             else
             {
-                DoMeshGeneration();
+                DoMeshGeneration();//更新Image RawIamge Text 元素网格信息
             }
         }
 
         private void DoMeshGeneration()
         {
             if (rectTransform != null && rectTransform.rect.width >= 0 && rectTransform.rect.height >= 0)
-                OnPopulateMesh(s_VertexHelper);
+                OnPopulateMesh(s_VertexHelper);//确定（填充）每一个UI元素Mesh的信息，包括顶点数据、三角形数据、UV数据、顶点色数据
             else
                 s_VertexHelper.Clear(); // clear the vertex helper so invalid graphics dont draw.
 
             var components = ListPool<Component>.Get();
+            //获取当前对象是否有IMeshModifier接口
+            //Text的描边和阴影都是通过IMeshModifier的ModeifyMesh()实现出来的
             GetComponents(typeof(IMeshModifier), components);
 
             for (var i = 0; i < components.Count; i++)
@@ -631,9 +658,13 @@ namespace UnityEngine.UI
             ListPool<Component>.Release(components);
 
             s_VertexHelper.FillMesh(workerMesh);
-            canvasRenderer.SetMesh(workerMesh);
+            canvasRenderer.SetMesh(workerMesh);//提交网格信息，开始合并网格
+            //SetMesh()方法最终在C++中实现，毕竟由于UI的元素很多，同时参与合并顶点的信息也会很多，在C++中实现效率会更好。
+            //UGUI效率会比NGUI要高一些，因为NGUI的“网格Mesh合并”都是在C#中完成的，而UGUI“网格Mesh合并”都是在C++中底层中完成的。 
         }
 
+
+        //拓展：#pragma warning disable 618 主要是禁用了618行的调用警告
         private void DoLegacyMeshGeneration()
         {
             if (rectTransform != null && rectTransform.rect.width >= 0 && rectTransform.rect.height >= 0)
@@ -745,7 +776,7 @@ namespace UnityEngine.UI
 #endif
 
         // Call from unity if animation properties have changed
-
+        //更新动画属性，会rebuild图形的所有属性
         protected override void OnDidApplyAnimationProperties()
         {
             SetAllDirty();

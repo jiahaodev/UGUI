@@ -4,6 +4,7 @@
     邮箱: jiahaodev@163.ccom
     日期：2020/02/24 16:02       
     功能：所有UI组件的基类
+    拓展：UI元素的基类是Graphic:UIBehaviour
 *****************************************************/
 namespace UnityEngine.EventSystems
 {

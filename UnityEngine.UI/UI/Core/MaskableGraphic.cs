@@ -82,6 +82,7 @@ namespace UnityEngine.UI
         {
             var toUse = baseMaterial;
 
+            //获取模板缓冲值
             if (m_ShouldRecalculateStencil)
             {
                 var rootCanvas = MaskUtilities.FindRootSortOverrideCanvas(transform);
@@ -95,9 +96,11 @@ namespace UnityEngine.UI
             Mask maskComponent = GetComponent<Mask>();
             if (m_StencilValue > 0 && (maskComponent == null || !maskComponent.IsActive()))
             {
+                //设置模板缓冲值，并且设置在该区域内的显示，不在的裁切掉
                 var maskMat = StencilMaterial.Add(toUse, (1 << m_StencilValue) - 1, StencilOp.Keep, CompareFunction.Equal, ColorWriteMask.All, (1 << m_StencilValue) - 1, 0);
                 StencilMaterial.Remove(m_MaskMaterial);
                 m_MaskMaterial = maskMat;
+                //并且更换新的材质
                 toUse = m_MaskMaterial;
             }
             return toUse;

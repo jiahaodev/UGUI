@@ -165,6 +165,7 @@ namespace UnityEngine.UI
             // if the parents are changed
             // or something similar we
             // do a recalculate here
+            // 重新计算裁切区域
             if (m_ShouldRecalculateClipRects)
             {
                 MaskUtilities.GetRectMasksForClip(this, m_Clippers);
@@ -173,6 +174,7 @@ namespace UnityEngine.UI
 
             // get the compound rects from
             // the clippers that are valid
+            //由于裁切可能有多个区域，这里会计算出正确包含重复的一个区域
             bool validRect = true;
             Rect clipRect = Clipping.FindCullAndClipWorldRect(m_Clippers, out validRect);
 
@@ -214,9 +216,11 @@ namespace UnityEngine.UI
 
                 foreach (MaskableGraphic maskableTarget in m_MaskableTargets)
                 {
+                    //准备把裁切区域传到每个UI元素的Shader中
                     maskableTarget.SetClipRect(clipRect, validRect);
 
                     if (maskableTarget.canvasRenderer.hasMoved)
+                        //准备开始裁切，准备重建裁切的UI
                         maskableTarget.Cull(clipRect, validRect);
                 }
             }
