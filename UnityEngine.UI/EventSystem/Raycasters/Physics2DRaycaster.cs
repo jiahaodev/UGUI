@@ -1,3 +1,10 @@
+/****************************************************
+    文件：Physics2DRaycaster.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/25 11:15       
+    功能：2D物理射线照射器
+*****************************************************/
 using System.Collections.Generic;
 using UnityEngine.UI;
 
@@ -34,7 +41,8 @@ namespace UnityEngine.EventSystems
             {
                 if (ReflectionMethodsCache.Singleton.getRayIntersectionAll == null)
                     return;
-
+                //采用ReflectionMethodsCache.Singleton.getRayIntersectionAll()【3D模式采用raycast3DAll()】来获取所有射线照射到的对象，
+                //用反射的方式把Physics.RaycastAll()方法缓存下来，让Unity的Physics模块与UI模块，保持低耦合，没有过分依赖。
                 m_Hits = ReflectionMethodsCache.Singleton.getRayIntersectionAll(ray, distanceToClipPlane, finalEventMask);
                 hitCount = m_Hits.Length;
             }
@@ -51,6 +59,8 @@ namespace UnityEngine.EventSystems
 
                 hitCount = ReflectionMethodsCache.Singleton.getRayIntersectionAllNonAlloc(ray, m_Hits, distanceToClipPlane, finalEventMask);
             }
+
+            //由于是2D,所以这里理论上距离是相同的，不需要排序
 
             if (hitCount != 0)
             {

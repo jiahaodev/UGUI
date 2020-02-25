@@ -3,7 +3,7 @@
 	作者：JiahaoWu
 	邮箱: jiahaodev@163.ccom
 	日期：2020/02/25 1:35   	
-	功能：
+	功能：事件管理系统
 *****************************************************/
 using System;
 using System.Collections.Generic;
@@ -18,7 +18,8 @@ namespace UnityEngine.EventSystems
     /// Handles input, raycasting, and sending events.
     /// </summary>
     /// <remarks>
-    /// The EventSystem is responsible for processing and handling events in a Unity scene. A scene should only contain one EventSystem. The EventSystem works in conjunction with a number of modules and mostly just holds state and delegates functionality to specific, overrideable components.
+    /// The EventSystem is responsible for processing and handling events in a Unity scene.
+    /// A scene should only contain one EventSystem. The EventSystem works in conjunction with a number of modules and mostly just holds state and delegates functionality to specific, overrideable components.
     /// When the EventSystem is started it searches for any BaseInputModules attached to the same GameObject and adds them to an internal list. On update each attached module receives an UpdateModules call, where the module can modify internal state. After each module has been Updated the active module has the Process call executed.This is where custom module processing can take place.
     /// </remarks>
     public class EventSystem : UIBehaviour
@@ -159,6 +160,7 @@ namespace UnityEngine.EventSystems
         /// </summary>
         /// <param name="selected">GameObject to select.</param>
         /// <param name="pointer">Associated EventData.</param>
+        /// 设置选中对象，会执行旧对象的“解除选中”，新对象的“选中”
         public void SetSelectedGameObject(GameObject selected, BaseEventData pointer)
         {
             if (m_SelectionGuard)
@@ -202,6 +204,7 @@ namespace UnityEngine.EventSystems
             SetSelectedGameObject(selected, baseEventDataCache);
         }
 
+        //投射结果比较，用于排序投射结果
         private static int RaycastComparer(RaycastResult lhs, RaycastResult rhs)
         {
             if (lhs.module != rhs.module)
@@ -254,6 +257,7 @@ namespace UnityEngine.EventSystems
         /// </summary>
         /// <param name="eventData">Current pointer data.</param>
         /// <param name="raycastResults">List of 'hits' to populate.</param>
+        /// 调用场景中所有投射器，并将结果存储到结果列表后，排序
         public void RaycastAll(PointerEventData eventData, List<RaycastResult> raycastResults)
         {
             raycastResults.Clear();
@@ -335,6 +339,8 @@ namespace UnityEngine.EventSystems
             base.OnDisable();
         }
 
+
+        //更新各个输入模块的状态
         private void TickModules()
         {
             for (var i = 0; i < m_SystemInputModules.Count; i++)
@@ -349,11 +355,13 @@ namespace UnityEngine.EventSystems
             m_HasFocus = hasFocus;
         }
 
+
+        //事件系统的更新核心
         protected virtual void Update()
         {
             if (current != this)
                 return;
-            TickModules();
+            TickModules(); // 更新各个输入模块的状态
 
             bool changedModule = false;
             for (var i = 0; i < m_SystemInputModules.Count; i++)
@@ -390,6 +398,7 @@ namespace UnityEngine.EventSystems
                 m_CurrentInputModule.Process();
         }
 
+        //如果module与当前输入模块不同，则取消旧的，激活新的
         private void ChangeEventModule(BaseInputModule module)
         {
             if (m_CurrentInputModule == module)

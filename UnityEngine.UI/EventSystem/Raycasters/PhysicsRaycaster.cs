@@ -1,3 +1,10 @@
+/****************************************************
+    文件：PhysicsRaycaster.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/25 10:57       
+    功能：3D物理射线照射器
+*****************************************************/
 using System.Collections.Generic;
 using UnityEngine.UI;
 
@@ -23,6 +30,7 @@ namespace UnityEngine.EventSystems
         /// <summary>
         /// Layer mask used to filter events. Always combined with the camera's culling mask if a camera is used.
         /// </summary>
+        /// 与摄像机culling mask所指定的“层列表”相关
         [SerializeField]
         protected LayerMask m_EventMask = kNoEventMaskSet;
 
@@ -176,7 +184,7 @@ namespace UnityEngine.EventSystems
                         worldNormal = m_Hits[b].normal,
                         screenPosition = eventData.position,
                         index = resultAppendList.Count,
-                        sortingLayer = 0,
+                        sortingLayer = 0, //sortingLayer、sortingOrder主要为2D的概念，所有这里都默认填写成0
                         sortingOrder = 0
                     };
                     resultAppendList.Add(result);

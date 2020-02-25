@@ -1,3 +1,10 @@
+/****************************************************
+    文件：PointerInputModule.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/25 11:43       
+    功能：主要处理PC的鼠标事件，移动平台的触摸
+*****************************************************/
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine.UI;
@@ -91,7 +98,6 @@ namespace UnityEngine.EventSystems
 
             if (input.phase == TouchPhase.Canceled)
             {
-                pointerData.pointerCurrentRaycast = new RaycastResult();
                 pointerData.pointerCurrentRaycast = new RaycastResult();
             }
             else

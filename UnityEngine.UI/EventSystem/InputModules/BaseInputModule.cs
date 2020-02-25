@@ -15,7 +15,7 @@ namespace UnityEngine.EventSystems
     /// A base module that raises events(引发/生成 事件) and sends them to GameObjects.
     /// </summary>
     /// <remarks>
-    /// An Input Module is a component of the EventSystem that is responsible for raising events and sending them to GameObjects for handling.
+    /// An Input Module is a component of the EventSystem that is responsible for（负责） raising events and sending them to GameObjects for handling.
     /// The BaseInputModule is a class that all Input Modules in the EventSystem inherit from. Examples of provided modules are TouchInputModule and StandaloneInputModule,
     /// if these are inadequate（不充足的） for your project you can create your own by extending from the BaseInputModule.
     /// </remarks>
@@ -197,7 +197,7 @@ namespace UnityEngine.EventSystems
             return null;
         }
 
-        // walk up the tree till a common root between the last entered and the current entered is foung
+        // walk up the tree till a common root between the last entered and the current entered is found
         // send exit events up to (but not inluding) the common root. Then send enter events up to
         // (but not including the common root).
         protected void HandlePointerExitAndEnter(PointerEventData currentPointerData, GameObject newEnterTarget)

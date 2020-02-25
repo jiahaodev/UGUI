@@ -1,3 +1,10 @@
+/****************************************************
+    文件：StandaloneInputModule.cs
+    作者：JiahaoWu
+    邮箱: jiahaodev@163.ccom
+    日期：2020/02/25 11:42       
+    功能：独立平台的输入模块（鼠标、键盘、控制器）
+*****************************************************/
 using System;
 using UnityEngine;
 using UnityEngine.Serialization;

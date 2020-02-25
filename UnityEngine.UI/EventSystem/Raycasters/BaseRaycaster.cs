@@ -30,6 +30,7 @@ namespace UnityEngine.EventSystems
 
         /// <summary>
         /// The camera that will generate rays for this raycaster.
+        /// 该相机将为“射线照射器”生成射线
         /// </summary>
         public abstract Camera eventCamera { get; }
 

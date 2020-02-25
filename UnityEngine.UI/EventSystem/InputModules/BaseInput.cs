@@ -23,6 +23,7 @@ namespace UnityEngine.EventSystems
         /// <summary>
         /// Interface to Input.imeCompositionMode. Can be overridden to provide custom input instead of using the Input class.
         /// </summary>
+        /// IME：Input Method Editor（输入法）
         public virtual IMECompositionMode imeCompositionMode
         {
             get { return Input.imeCompositionMode; }
